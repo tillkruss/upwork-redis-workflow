@@ -1,5 +1,9 @@
 <?php
 
+var_dump(
+    phpversion('redis')
+);
+
 $redis = new Redis;
 
 $redis->connect(
