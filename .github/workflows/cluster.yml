@@ -30,10 +30,12 @@ jobs:
         run: sudo apt-get install -y redis-tools
 
       - name: Health Check
+        # TODO: Adjust ips/ports if needed
         run: redis-cli -p 7000 cluster nodes
 
       - name: Test PHP connection
         env:
+          # TODO: Adjust ips/ports if needed
           REDIS_PRIMARIES: 127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002
           REDIS_AUTH: secret
         run: php cluster.php

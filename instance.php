@@ -4,7 +4,11 @@ $redis = new Redis;
 
 $redis->connect(
     getenv('REDIS_HOST'),
-    getenv('REDIS_PORT')
+    getenv('REDIS_PORT'),
+    1.0,
+    null,
+    100,
+    1.0
 );
 
 $redis->auth(

@@ -1,0 +1,51 @@
+name: Redis Sentinels
+
+on: [push]
+
+jobs:
+
+  sentinels:
+    name: Sentinels ${{ matrix.redis }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        redis: ['4.0.14', '6.2.0', '7.0.3']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # TODO: Start Redis Sentinels
+      #   - Use ${{ matrix.redis }} for version
+      #   - Must have at least 3 "sentinels"
+      #   - Each Sentinel must have at least 1 primary node and 1 replica
+      #   - Start 1 sentinel service "foobar"
+      #   - Sentinels and nodes must have a password
+      #   - Is `bitnami/redis-sentinel` a good choice?
+      - name: Start Redis Sentinels
+        run: whoami
+
+      - name: Install dependencies
+        run: sudo apt-get install -y redis-tools
+
+      - name: Health Check
+        # TODO: Adjust ips/ports if needed
+        run: |
+          redis-cli -p 26379 SENTINEL GET-MASTER-ADDR-BY-NAME foobar
+          redis-cli -p 26380 SENTINEL GET-MASTER-ADDR-BY-NAME foobar
+          redis-cli -p 26381 SENTINEL GET-MASTER-ADDR-BY-NAME foobar
+          redis-cli -p 26379 SENTINEL REPLICAS foobar
+          redis-cli -p 26380 SENTINEL REPLICAS foobar
+          redis-cli -p 26381 SENTINEL REPLICAS foobar
+
+      - name: Test PHP connection
+        env:
+          # TODO: Adjust ips/ports if needed
+          REDIS_SENTINELS: 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
+          REDIS_SERVICE: foobar
+          REDIS_AUTH: secret
+        run: php sentinel.php
+  
