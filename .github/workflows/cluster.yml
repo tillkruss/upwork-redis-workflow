@@ -1,0 +1,40 @@
+name: Redis Cluster
+
+on: [push]
+
+jobs:
+
+  cluster:
+    name: Cluster ${{ matrix.redis }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        redis: ['4.0.14', '6.2.0', '7.0.3']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # TODO: Start a Redis Cluster
+      #   - Use ${{ matrix.redis }} for version
+      #   - Must have at least 3 primary nodes with 1 replica each
+      #   - Cluster must require a password for connections
+      #   - Is `bitnami/redis-cluster` a good choice?
+      - name: Start Redis Cluster
+        run: whoami
+
+      - name: Install dependencies
+        run: sudo apt-get install -y redis-tools
+
+      - name: Health Check
+        run: redis-cli -p 7000 cluster nodes
+
+      - name: Test PHP connection
+        env:
+          REDIS_PRIMARIES: 127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002
+          REDIS_AUTH: secret
+        run: php cluster.php
+  

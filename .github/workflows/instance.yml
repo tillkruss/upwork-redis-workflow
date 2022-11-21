@@ -1,11 +1,11 @@
-name: Redis Tests
+name: Redis Instance
 
 on: [push]
 
 jobs:
 
   instance:
-    name: Redis Instance ${{ matrix.redis }}
+    name: Instance ${{ matrix.redis }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
