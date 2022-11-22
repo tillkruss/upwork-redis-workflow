@@ -44,7 +44,7 @@ jobs:
       - name: Test PHP connection
         env:
           # TODO: Adjust ips/ports if needed
-          REDIS_PRIMARIES: 127.0.0.1:5000,127.0.0.1:5001,127.0.0.1:5002
+          REDIS_PRIMARIES: 127.0.0.1:6379,127.0.0.1:6380,127.0.0.1:6381
           REDIS_AUTH: secret
         run: |
           docker ps -a
