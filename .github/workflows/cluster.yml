@@ -49,7 +49,7 @@ jobs:
       - name: Test PHP connection
         env:
           # TODO: Adjust ips/ports if needed
-          REDIS_PRIMARIES: 127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002
+          REDIS_PRIMARIES: 127.0.0.1:6379
           REDIS_AUTH: secret
         run: php cluster.php
   
