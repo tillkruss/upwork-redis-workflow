@@ -13,19 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         redis: ['4.0.14', '6.2.0', '7.0.3']
-        
-    services:
-      redis:
-        image: bitnami/redis:${{ matrix.redis }}
-        env:
-          REDIS_PASSWORD: secret
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    
+
 
     steps:
       - name: Checkout
@@ -37,6 +26,14 @@ jobs:
       #   - Cluster must require a password for connections
       #   - Is `bitnami/redis-cluster` a good choice?
       - name: Start Redis Cluster
+        uses: vishnudxb/redis-cluster@1.0.5
+        with:
+          master1-port: 5000
+          master2-port: 5001
+          master3-port: 5002
+          slave1-port: 5003
+          slave2-port: 5004
+          slave3-port: 5005
         run: whoami
 
       - name: Install dependencies
