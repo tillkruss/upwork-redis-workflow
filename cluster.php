@@ -5,7 +5,10 @@ $nodes = array_map('trim', explode(',', getenv('REDIS_PRIMARIES')));
 if (empty(getenv('REDIS_AUTH'))) {
     throw new Exception('No cluster password given');
 }
-print($nodes)
+
+print 'nodes are';
+print $nodes;
+
 $redis = new RedisCluster(
     null,
     $nodes,
