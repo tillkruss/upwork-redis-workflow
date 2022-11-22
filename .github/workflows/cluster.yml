@@ -13,39 +13,6 @@ jobs:
       fail-fast: false
       matrix:
         redis: ['4.0.14', '6.2.0', '7.0.3']
-    
-    services:
-      fix-redis-volume-ownership: # This service is to authorise redis-master with ownership permissions
-        image: 'bitnami/redis:latest'
-        user: root
-        command: chown -R 1001:1001 /bitnami
-        volumes:
-          - ./data/redis:/bitnami
-          - ./data/redis/conf/redis.conf:/opt/bitnami/redis/conf/redis.conf
-
-      redis-master: # Setting up master node
-        image: 'bitnami/redis:latest'
-        ports:
-          - '6329:6379' # Port 6329 will be exposed to handle connections from outside server 
-        environment:
-          - REDIS_REPLICATION_MODE=master # Assigning the node as a master
-          - ALLOW_EMPTY_PASSWORD=yes # No password authentication required/ provide password if needed
-        volumes:
-          - ./data/redis:/bitnami # Redis master data volume
-          - ./data/redis/conf/redis.conf:/opt/bitnami/redis/conf/redis.conf # Redis master configuration volume
-
-
-      redis-replica: # Setting up slave node
-        image: 'bitnami/redis:latest'
-        ports:
-          - '6379' # No port is exposed 
-        depends_on:
-          - redis-master # will only start after the master has booted completely
-        environment:
-          - REDIS_REPLICATION_MODE=slave # Assigning the node as slave
-          - REDIS_MASTER_HOST=redis-master # Host for the slave node is the redis-master node
-          - REDIS_MASTER_PORT_NUMBER=6379 # Port number for local 
-          - ALLOW_EMPTY_PASSWORD=yes # No password required to connect to node
 
     steps:
       - name: Checkout
@@ -57,7 +24,14 @@ jobs:
       #   - Cluster must require a password for connections
       #   - Is `bitnami/redis-cluster` a good choice?
       - name: Start Redis Cluster
-        run: whoami
+        uses: bitnami/redis-cluster:${{ matrix.redis }}
+        with:
+          master1-port: 5000
+          master2-port: 5001
+          master3-port: 5002
+          slave1-port: 5003
+          slave2-port: 5004
+          slave3-port: 5005
 
 
       - name: Install dependencies
