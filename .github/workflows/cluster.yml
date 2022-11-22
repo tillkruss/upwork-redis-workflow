@@ -40,12 +40,12 @@ jobs:
 
       - name: Health Check
         # TODO: Adjust ips/ports if needed
-        run: redis-cli -p 6379 cluster nodes
+        run: redis-cli -p 5000 cluster nodes
 
       - name: Test PHP connection
         env:
           # TODO: Adjust ips/ports if needed
-          REDIS_PRIMARIES: 127.0.0.1:6379
+          REDIS_PRIMARIES: 127.0.0.1:5000,127.0.0.1:5001,127.0.0.1:5002
           REDIS_AUTH: secret
         run: php cluster.php
   
