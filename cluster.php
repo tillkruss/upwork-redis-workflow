@@ -7,7 +7,9 @@ if (empty(getenv('REDIS_AUTH'))) {
 }
 
 print 'nodes are';
-print $nodes;
+print $nodes[0];
+print $nodes[1];
+print $nodes[2];
 
 $redis = new RedisCluster(
     null,
