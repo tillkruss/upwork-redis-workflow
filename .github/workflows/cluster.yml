@@ -34,7 +34,6 @@ jobs:
           slave1-port: 5003
           slave2-port: 5004
           slave3-port: 5005
-        run: whoami
 
       - name: Install dependencies
         run: sudo apt-get install -y redis-tools
