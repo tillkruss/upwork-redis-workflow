@@ -41,10 +41,12 @@ jobs:
         # TODO: Adjust ips/ports if needed
         run: redis-cli -p 5001 cluster nodes
 
-      # - name: Test PHP connection
-      #   env:
-      #     # TODO: Adjust ips/ports if needed
-      #     REDIS_PRIMARIES: 127.0.0.1:5000,127.0.0.1:5001,127.0.0.1:5002
-      #     REDIS_AUTH: secret
-      #   # run: php cluster.php
+      - name: Test PHP connection
+        env:
+          # TODO: Adjust ips/ports if needed
+          REDIS_PRIMARIES: 127.0.0.1:5000,127.0.0.1:5001,127.0.0.1:5002
+          REDIS_AUTH: secret
+        run: |
+          docker ps -a
+          php cluster.php
   
