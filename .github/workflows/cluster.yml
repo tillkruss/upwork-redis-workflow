@@ -44,7 +44,7 @@ jobs:
 
       - name: Health Check
         # TODO: Adjust ips/ports if needed
-        run: redis-cli -p 7000 cluster nodes
+        run: redis-cli -p 6379 cluster nodes
 
       - name: Test PHP connection
         env:
