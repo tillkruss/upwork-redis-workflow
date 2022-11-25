@@ -45,7 +45,7 @@ jobs:
         env:
           # TODO: Adjust ips/ports if needed
           REDIS_PRIMARIES: 172.17.0.3:6379,172.17.0.3:6380,172.17.0.3:6381
-          REDIS_AUTH: secret
+          REDIS_AUTH: default
         run: |
           docker ps -a
           php cluster.php
