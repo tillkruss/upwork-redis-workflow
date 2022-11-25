@@ -6,6 +6,11 @@ if (empty(getenv('REDIS_AUTH'))) {
     throw new Exception('No cluster password given');
 }
 
+print 'nodes are';
+print $nodes[0];
+print $nodes[1];
+print $nodes[2];
+
 $redis = new RedisCluster(
     null,
     $nodes,

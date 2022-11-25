@@ -3,40 +3,30 @@ name: Redis Cluster
 on: [push]
 
 jobs:
-
-  cluster:
-    name: Cluster ${{ matrix.redis }}
+  setup-build-publish-deploy:
+    name: Run tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    strategy:
-      fail-fast: false
-      matrix:
-        redis: ['4.0.14', '6.2.0', '7.0.3']
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        submodules: true
 
-      # TODO: Start a Redis Cluster
-      #   - Use ${{ matrix.redis }} for version
-      #   - Must have at least 3 primary nodes with 1 replica each
-      #   - Cluster must require a password for connections
-      #   - Is `bitnami/redis-cluster` a good choice?
-      - name: Start Redis Cluster
-        run: whoami
+    - name: Test redis cluster
+      uses: vishnudxb/redis-cluster@1.0.5
+      with:
+        master1-port: 5000
+        master2-port: 5001
+        master3-port: 5002
+        slave1-port: 5003
+        slave2-port: 5004
+        slave3-port: 5005
 
-      - name: Install dependencies
-        run: sudo apt-get install -y redis-tools
-
-      - name: Health Check
-        # TODO: Adjust ips/ports if needed
-        run: redis-cli -p 7000 cluster nodes
-
-      - name: Test PHP connection
-        env:
-          # TODO: Adjust ips/ports if needed
-          REDIS_PRIMARIES: 127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002
-          REDIS_AUTH: secret
-        run: php cluster.php
-  
+     # Running Test
+    - name: Running Test
+      run: |
+         sudo apt-get install -y redis-tools
+         docker ps -a
+         redis-cli -h 127.0.0.1 -p 5000 ping
+         redis-cli -h 127.0.0.1 -p 5000 cluster nodes

@@ -1,51 +1,102 @@
-name: Redis Sentinels
+name: Tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
+  test-all:
+    name: Test PHP ${{ matrix.php-version }}
 
-  sentinels:
-    name: Sentinels ${{ matrix.redis }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: ${{ matrix.operating-system }}
 
     strategy:
-      fail-fast: false
       matrix:
-        redis: ['4.0.14', '6.2.0', '7.0.3']
+        operating-system: [ubuntu-latest]
+        php-version: ['8.0']
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      # TODO: Start Redis Sentinels
-      #   - Use ${{ matrix.redis }} for version
-      #   - Must have at least 3 "sentinels"
-      #   - Each Sentinel must have at least 1 primary node and 1 replica
-      #   - Start 1 sentinel service "foobar"
-      #   - Sentinels and nodes must have a password
-      #   - Is `bitnami/redis-sentinel` a good choice?
-      - name: Start Redis Sentinels
-        run: whoami
-
-      - name: Install dependencies
-        run: sudo apt-get install -y redis-tools
-
-      - name: Health Check
-        # TODO: Adjust ips/ports if needed
-        run: |
-          redis-cli -p 26379 SENTINEL GET-MASTER-ADDR-BY-NAME foobar
-          redis-cli -p 26380 SENTINEL GET-MASTER-ADDR-BY-NAME foobar
-          redis-cli -p 26381 SENTINEL GET-MASTER-ADDR-BY-NAME foobar
-          redis-cli -p 26379 SENTINEL REPLICAS foobar
-          redis-cli -p 26380 SENTINEL REPLICAS foobar
-          redis-cli -p 26381 SENTINEL REPLICAS foobar
-
-      - name: Test PHP connection
+    services:
+      redis:
+        image: bitnami/redis:6.2.4-debian-10-r35
+        ports:
+          - 6379:6379
         env:
-          # TODO: Adjust ips/ports if needed
-          REDIS_SENTINELS: 127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
-          REDIS_SERVICE: foobar
-          REDIS_AUTH: secret
-        run: php sentinel.php
-  
+          ALLOW_EMPTY_PASSWORD: 'yes'
+        options: >-
+          --health-cmd "redis-cli -p 6379 ping"
+          --health-start-period 5s
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis-sentinel:
+        image: bitnami/redis-sentinel:6.2.4-debian-10-r39
+        ports:
+          - 26379:26379
+        env:
+          REDIS_MASTER_HOST: redis
+          REDIS_MASTER_SET: mymaster
+          REDIS_SENTINEL_QUORUM: 1
+        options: >-
+          --health-cmd "redis-cli -p 26379 ping"
+          --health-start-period 5s
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHPUnit
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: redis
+          tools: phpunit:9.5.0
+          coverage: pcov
+
+      - name: Setup problem matchers for PHP
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install composer dependencies
+        run: composer install --prefer-dist
+
+      - name: Run phpunit tests
+        run: composer test
+        env:
+          REDIS_SENTINEL_HOST: 127.0.0.1
+          REDIS_SENTINEL_PORT: 26379
+          REDIS_SENTINEL_SERVICE: mymaster
+
+      - name: Prepare paths for SonarQube analysis
+        if: matrix.php-version == '8.0'
+        run: |
+          sed -i "s|$GITHUB_WORKSPACE|/github/workspace|g" phpunit.coverage-clover.xml
+          sed -i "s|$GITHUB_WORKSPACE|/github/workspace|g" phpunit.report-junit.xml
+      - name: Run SonarQube analysis
+        uses: sonarsource/sonarcloud-github-action@master
+        if: matrix.php-version == '8.0'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONARCLOUD_TOKEN }}
+
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
