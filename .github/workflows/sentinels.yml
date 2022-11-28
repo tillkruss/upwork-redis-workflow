@@ -76,7 +76,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install composer dependencies
-        run: composer install --prefer-dist
+        run: composer install #--prefer-dist
 
       - name: Run phpunit tests
         run: composer test
