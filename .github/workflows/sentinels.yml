@@ -77,7 +77,10 @@ jobs:
 
       - name: Install composer dependencies
         run: composer install --prefer-dist
-
+      
+      - name: Start Redis Service
+        run: service redis-server start
+        
       - name: Run phpunit tests
         run: composer test
         env:
