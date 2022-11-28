@@ -55,16 +55,6 @@
         "component": "package",
         "branch-alias": {
             "dev-master": "6.0.x-dev"
-        },
-        "laravel": {
-            "providers": [
-                "Cartalyst\\Sentinel\\Laravel\\SentinelServiceProvider"
-            ],
-            "aliases": {
-                "Activation": "Cartalyst\\Sentinel\\Laravel\\Facades\\Activation",
-                "Reminder": "Cartalyst\\Sentinel\\Laravel\\Facades\\Reminder",
-                "Sentinel": "Cartalyst\\Sentinel\\Laravel\\Facades\\Sentinel"
-            }
         }
     },
     "scripts": {
